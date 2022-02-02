@@ -8,9 +8,10 @@ RTI Analytics Exercise
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 # Read in flatten.csv file into a Pandas dataframe
 
@@ -74,12 +75,19 @@ X_train, X_test, Y_train, Y_test = train_test_split(df_clean.drop('over_50k', ax
 X_test, X_val, Y_test, Y_val = train_test_split(X_test, Y_test, train_size = 0.33, random_state = 123)
 
 
+# Let's see the correlation matrix 
+plt.figure(figsize = (20,10))        # Size of the figure
+sns.heatmap(df_clean.corr(),annot = True)
+plt.show()
+
+
+
 #Train model using training data
 LogReg = LogisticRegression(solver='liblinear', random_state=0)
 LogReg.fit(X_train, Y_train)
 
 #Scoring the model - percentage of time that model correctly predicts whwther person makes over $50,000 per year
-LogReg.score(X_train, Y_train)
+LogReg.score(X_val, Y_val)
 
 
 # Create Confusion Matrix
@@ -101,6 +109,19 @@ plt.show()
 print(classification_report(Y_train, LogReg.predict(X_train)))
 
 
+pred = LogReg.predict(X_val)
+df2=pd.DataFrame({'Actual':Y_val, 'Predicted':pred})
+df2
+
+#Predicted vs Actual
+plt.figure(figsize=(5, 7))
+ax = sns.distplot(Y_val, hist=False, color="r", label="Actual Value")
+sns.distplot(pred, hist=False, color="b", label="Predicted Values" , ax=ax)
+plt.title('Actual vs Predicted people earning over $50,000/year')
+plt.show()
+
+for i in range (0,1):
+    print(df_clean.iloc[0])
 
 #Plots in matplotlib reside within a figure object, use plt.figure to create new figure
 fig=plt.figure()
