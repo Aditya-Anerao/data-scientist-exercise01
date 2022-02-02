@@ -7,11 +7,10 @@ RTI Analytics Exercise
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix
 
 # Read in flatten.csv file into a Pandas dataframe
 
@@ -59,16 +58,15 @@ print(df_clean.dtypes)
 # Check for Missing Values - No Missing Values
 df.isnull().sum()
 
-
-
 # Summary Statistics of variables
 print(df_clean.describe(include ='all'))
 
 # Print Count of Unique Values for each variable
 ncol = df.shape[1]
-
 for col in df.columns:
     print(df[col].value_counts())
+
+# 76% of people earn less than $50000/year
 
 # Split the data into a 70/20/10 training, validation, and test data split
 X_train, X_test, Y_train, Y_test = train_test_split(df_clean.drop('over_50k', axis = 1), df_clean['over_50k'], train_size = 0.7, random_state = 123)
@@ -89,6 +87,14 @@ LogReg.fit(X_train, Y_train)
 #Scoring the model - percentage of time that model correctly predicts whwther person makes over $50,000 per year
 LogReg.score(X_val, Y_val)
 
+#Predicted vs Actual Validation
+pred = LogReg.predict(X_val)
+
+plt.figure(figsize=(5, 7))
+ax = sns.distplot(Y_val, hist=False, color="r", label="Actual Value")
+sns.distplot(pred, hist=False, color="b", label="Predicted Values" , ax=ax)
+plt.title('Actual vs Predicted people earning over $50,000/year')
+plt.show()
 
 # Create Confusion Matrix
 cm = confusion_matrix(Y_train, LogReg.predict(X_train))
@@ -96,8 +102,8 @@ cm = confusion_matrix(Y_train, LogReg.predict(X_train))
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.imshow(cm)
 ax.grid(False)
-ax.xaxis.set(ticks=(0, 1), ticklabels=('Predicted Less than or equal to $50,000/year', 'Predicted Greater than $50,000/year'))
-ax.yaxis.set(ticks=(0, 1), ticklabels=('Actual Less than or equal to $50,000/year', 'Actual Greater than $50,000/year'))
+ax.xaxis.set(ticks=(0, 1), ticklabels=('Predicted Less than or equal to $50,000/year (False Positive)', 'Predicted Greater than $50,000/year (True Negative)'))
+ax.yaxis.set(ticks=(0, 1), ticklabels=('Actual Less than or equal to $50,000/year (True Positive)', 'Actual Greater than $50,000/year (False Negative)'))
 ax.set_ylim(1.5, -0.5)
 for i in range(2):
     for j in range(2):
@@ -109,16 +115,11 @@ plt.show()
 print(classification_report(Y_train, LogReg.predict(X_train)))
 
 
-pred = LogReg.predict(X_val)
+
 df2=pd.DataFrame({'Actual':Y_val, 'Predicted':pred})
 df2
 
-#Predicted vs Actual
-plt.figure(figsize=(5, 7))
-ax = sns.distplot(Y_val, hist=False, color="r", label="Actual Value")
-sns.distplot(pred, hist=False, color="b", label="Predicted Values" , ax=ax)
-plt.title('Actual vs Predicted people earning over $50,000/year')
-plt.show()
+
 
 for i in range (0,1):
     print(df_clean.iloc[0])
