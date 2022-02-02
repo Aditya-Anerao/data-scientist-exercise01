@@ -8,27 +8,21 @@ RTI Analytics Exercise
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-#import csv
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
 
 # Read in flatten.csv file into a Pandas dataframe
 
 df = pd.read_csv("/Users/amane/Documents/GitHub/data-scientist-exercise01/flatten.csv")
 
+# Understand Table Dimensions - 48842 rows, 23 columns
+print(df.shape)
+
+
 # Examine first 10 rows of the dataframe
 
 print(df.head(10))
-
-# Remove ID columns from dataframe
-#df_clean = df.drop('workclass_id', axis = 1)
-#df_clean = df_clean.drop('education_level_id', axis = 1)
-#df_clean = df_clean.drop('marital_status_id', axis = 1)
-#df_clean = df_clean.drop('occupation_id', axis = 1)
-#df_clean = df_clean.drop('relationship_id', axis = 1)
-#df_clean = df_clean.drop('race_id', axis = 1)
-#df_clean = df_clean.drop('sex_id', axis = 1)
-#df_clean = df_clean.drop('country_id', axis = 1)
 
 # Remove Descriptive columns for categorical variables from dataframe
 df_clean = df.drop('id', axis = 1)
@@ -61,10 +55,19 @@ df_clean["country_id"] = df_clean["country_id"].astype("category")
 # Explore variable type
 print(df_clean.dtypes)
 
+# Check for Missing Values - No Missing Values
+df.isnull().sum()
 
-# Summary Statistics
 
 
+# Summary Statistics of variables
+print(df_clean.describe(include ='all'))
+
+# Print Count of Unique Values for each variable
+ncol = df.shape[1]
+
+for col in df.columns:
+    print(df[col].value_counts())
 
 # Split the data into a 70/20/10 training, validation, and test data split
 X_train, X_test, Y_train, Y_test = train_test_split(df_clean.drop('over_50k', axis = 1), df_clean['over_50k'], train_size = 0.7, random_state = 123)
@@ -72,16 +75,30 @@ X_test, X_val, Y_test, Y_val = train_test_split(X_test, Y_test, train_size = 0.3
 
 
 #Train model using training data
-LogReg = LogisticRegression()
+LogReg = LogisticRegression(solver='liblinear', random_state=0)
 LogReg.fit(X_train, Y_train)
 
 #Scoring the model - percentage of time that model correctly predicts whwther person makes over $50,000 per year
-LogReg.score(X_val, Y_val)
+LogReg.score(X_train, Y_train)
 
 
+# Create Confusion Matrix
+cm = confusion_matrix(Y_train, LogReg.predict(X_train))
 
-for i in range(0,1):
-    print(df_clean.iloc[0])
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.imshow(cm)
+ax.grid(False)
+ax.xaxis.set(ticks=(0, 1), ticklabels=('Predicted Less than or equal to $50,000/year', 'Predicted Greater than $50,000/year'))
+ax.yaxis.set(ticks=(0, 1), ticklabels=('Actual Less than or equal to $50,000/year', 'Actual Greater than $50,000/year'))
+ax.set_ylim(1.5, -0.5)
+for i in range(2):
+    for j in range(2):
+        ax.text(j, i, cm[i, j], ha='center', va='center', color='red')
+plt.show()
+
+
+# Create Classificaiton Report
+print(classification_report(Y_train, LogReg.predict(X_train)))
 
 
 
@@ -99,6 +116,3 @@ plt.xlabel('Age')
 plt.ylabel('# of Customers')
 plt.show()
 
-for i in range (0,1):
-#range(0,len(df)):
-    print(df_clean.iloc[i])
