@@ -51,7 +51,6 @@ df_clean["race_id"] = df_clean["race_id"].astype("category")
 df_clean["sex_id"] = df_clean["sex_id"].astype("category")
 df_clean["country_id"] = df_clean["country_id"].astype("category")
 
-
 # Explore variable type
 print(df_clean.dtypes)
 
@@ -65,7 +64,6 @@ print(df_clean.describe(include ='all'))
 ncol = df.shape[1]
 for col in df.columns:
     print(df[col].value_counts())
-
 # 76% of people earn less than $50000/year
 
 # Split the data into a 70/20/10 training, validation, and test data split
@@ -73,21 +71,19 @@ X_train, X_test, Y_train, Y_test = train_test_split(df_clean.drop('over_50k', ax
 X_test, X_val, Y_test, Y_val = train_test_split(X_test, Y_test, train_size = 0.33, random_state = 123)
 
 
-# Let's see the correlation matrix 
+# Correlation matrix of continuous variables
 plt.figure(figsize = (20,10))        # Size of the figure
 sns.heatmap(df_clean.corr(),annot = True)
 plt.show()
 
-
-
 #Train model using training data
-LogReg = LogisticRegression(solver='liblinear', random_state=0)
+LogReg = LogisticRegression(random_state=123)
 LogReg.fit(X_train, Y_train)
 
 #Scoring the model - percentage of time that model correctly predicts whwther person makes over $50,000 per year
 LogReg.score(X_val, Y_val)
 
-#Predicted vs Actual Validation
+#Predicted vs Actual Validation - Figure 1
 pred = LogReg.predict(X_val)
 
 plt.figure(figsize=(5, 7))
@@ -96,14 +92,14 @@ sns.distplot(pred, hist=False, color="b", label="Predicted Values" , ax=ax)
 plt.title('Actual vs Predicted people earning over $50,000/year')
 plt.show()
 
-# Create Confusion Matrix
-cm = confusion_matrix(Y_train, LogReg.predict(X_train))
+# Create Confusion Matrix - Figure 2
+cm = confusion_matrix(Y_val, pred)
 
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.imshow(cm)
 ax.grid(False)
-ax.xaxis.set(ticks=(0, 1), ticklabels=('Predicted Less than or equal to $50,000/year (False Positive)', 'Predicted Greater than $50,000/year (True Negative)'))
-ax.yaxis.set(ticks=(0, 1), ticklabels=('Actual Less than or equal to $50,000/year (True Positive)', 'Actual Greater than $50,000/year (False Negative)'))
+ax.xaxis.set(ticks=(0, 1), ticklabels=('Predicted Less than or equal to $50,000/year', 'Predicted Greater than $50,000/year'))
+ax.yaxis.set(ticks=(0, 1), ticklabels=('Actual Less than or equal to $50,000/year', 'Actual Greater than $50,000/year'))
 ax.set_ylim(1.5, -0.5)
 for i in range(2):
     for j in range(2):
@@ -114,27 +110,4 @@ plt.show()
 # Create Classificaiton Report
 print(classification_report(Y_train, LogReg.predict(X_train)))
 
-
-
-df2=pd.DataFrame({'Actual':Y_val, 'Predicted':pred})
-df2
-
-
-
-for i in range (0,1):
-    print(df_clean.iloc[0])
-
-#Plots in matplotlib reside within a figure object, use plt.figure to create new figure
-fig=plt.figure()
-#Create one or more subplots using add_subplot, because you can't create blank figure
-ax = fig.add_subplot(1,1,1)
-#Variable
-ax.hist(df_clean['age'],bins = 5)
-
-
-#Labels and Tit
-plt.title('Age distribution')
-plt.xlabel('Age')
-plt.ylabel('# of Customers')
-plt.show()
 
